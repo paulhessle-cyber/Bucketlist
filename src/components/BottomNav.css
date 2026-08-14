@@ -1,0 +1,33 @@
+.bottom-nav {
+  display: flex;
+  border-top: 2px solid var(--paper-line);
+  background: var(--card);
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.bottom-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  padding: 8px 4px;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-family: 'Kalam', cursive;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.bottom-nav-icon {
+  font-size: 1.3rem;
+}
+
+.bottom-nav-btn.active {
+  color: var(--accent-dark);
+  font-weight: 700;
+  background: var(--accent-soft);
+}

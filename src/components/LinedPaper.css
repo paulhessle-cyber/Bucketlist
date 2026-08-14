@@ -1,0 +1,53 @@
+.lined-paper {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 38px,
+    var(--paper-line) 39px,
+    var(--paper-line) 40px
+  );
+  background-position: 0 4px;
+  padding: 8px 18px 18px 26px;
+  position: relative;
+}
+
+.lined-paper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 16px;
+  width: 2px;
+  background: var(--paper-margin);
+  opacity: 0.55;
+}
+
+.month-label {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--accent-dark);
+  margin: 18px 0 4px 4px;
+}
+
+.month-label:first-child {
+  margin-top: 4px;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 1.15rem;
+  margin-top: 60px;
+  padding: 0 20px;
+  line-height: 1.5;
+}
+
+.empty-state .empty-emoji {
+  font-size: 2.4rem;
+  display: block;
+  margin-bottom: 10px;
+}

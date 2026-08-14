@@ -1,0 +1,63 @@
+.world-map-wrap {
+  position: relative;
+  border-bottom: 3px solid var(--paper-line);
+  flex-shrink: 0;
+  background: #dceaf0;
+}
+
+.world-map-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.country {
+  fill: #b9c9d6;
+  stroke: #dceaf0;
+  stroke-width: 0.5;
+  cursor: pointer;
+  transition: fill 0.15s ease;
+}
+
+.country:hover {
+  fill: #94b5c4;
+}
+
+.country.visited {
+  fill: var(--accent);
+}
+
+.map-stats {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.map-add-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--accent-dark);
+  font-size: 1.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.map-add-btn:active {
+  transform: scale(0.94);
+}
