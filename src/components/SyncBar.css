@@ -1,0 +1,36 @@
+.sync-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 16px;
+  background: var(--accent-dark);
+  color: #fff;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.sync-status {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sync-action {
+  background: none;
+  border: none;
+  color: #fff;
+  font-family: 'Kalam', cursive;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 2px 0;
+  flex-shrink: 0;
+}
+
+.sync-signin {
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  font-weight: 700;
+}
