@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react';
 import type { BucketItem } from '../types';
+import { compressImage } from '../lib/image';
 import './AchievedDetail.css';
 
 interface AchievedDetailProps {
   item: BucketItem;
   onClose: () => void;
   onUpdate: (id: string, data: Partial<BucketItem>) => void;
+  onAddPhotos: (id: string, photos: string[]) => void;
   onUnachieve: (id: string) => void;
 }
 
@@ -15,28 +17,27 @@ function formatDate(iso?: string) {
   return d.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
 }
 
-export function AchievedDetail({ item, onClose, onUpdate, onUnachieve }: AchievedDetailProps) {
+export function AchievedDetail({ item, onClose, onUpdate, onAddPhotos, onUnachieve }: AchievedDetailProps) {
   const [editing, setEditing] = useState(false);
   const [description, setDescription] = useState(item.description ?? '');
   const [location, setLocation] = useState(item.location ?? '');
   const [coverIndex, setCoverIndex] = useState(0);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const cover = item.photos[coverIndex];
 
   function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
-    const readers = Array.from(files).map(
-      (file) =>
-        new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        })
-    );
-    Promise.all(readers).then((dataUrls) => {
-      onUpdate(item.id, { photos: [...item.photos, ...dataUrls] });
-    });
+    setUploading(true);
+    Promise.all(Array.from(files).map(compressImage))
+      .then((dataUrls) => {
+        onAddPhotos(item.id, dataUrls);
+      })
+      .catch(() => {
+        window.alert("Couldn't add that photo. Try a different file.");
+      })
+      .finally(() => setUploading(false));
   }
 
   function save() {
@@ -72,8 +73,12 @@ export function AchievedDetail({ item, onClose, onUpdate, onUnachieve }: Achieve
               <img src={p} alt="" />
             </button>
           ))}
-          <button className="detail-thumb add" onClick={() => fileInputRef.current?.click()}>
-            +
+          <button
+            className="detail-thumb add"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? '…' : '+'}
           </button>
           <input
             ref={fileInputRef}
@@ -119,8 +124,12 @@ export function AchievedDetail({ item, onClose, onUpdate, onUnachieve }: Achieve
 
         {editing ? (
           <div className="detail-actions">
-            <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>
-              📷 Add photos
+            <button
+              className="btn btn-secondary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              📷 {uploading ? 'Adding…' : 'Add photos'}
             </button>
             <button className="btn btn-primary" onClick={save}>
               Save

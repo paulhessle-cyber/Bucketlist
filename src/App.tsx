@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { BucketItem, VisitedCountry } from './types';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useIndexedStorage } from './hooks/useIndexedStorage';
 import { BottomNav, type TabKey } from './components/BottomNav';
 import { MyListPage } from './components/MyListPage';
 import { TravelListPage } from './components/TravelListPage';
@@ -18,8 +18,8 @@ function todayIso() {
 
 export default function App() {
   const [tab, setTab] = useState<TabKey>('my-list');
-  const [items, setItems] = useLocalStorage<BucketItem[]>('bucketlist.items', []);
-  const [visited, setVisited] = useLocalStorage<VisitedCountry[]>('bucketlist.visitedCountries', []);
+  const [items, setItems] = useIndexedStorage<BucketItem[]>('bucketlist.items', []);
+  const [visited, setVisited] = useIndexedStorage<VisitedCountry[]>('bucketlist.visitedCountries', []);
   const [detailItem, setDetailItem] = useState<BucketItem | null>(null);
 
   function addItem(kind: BucketItem['kind'], data: Pick<BucketItem, 'title' | 'emoji' | 'location' | 'targetDate'>) {
@@ -37,6 +37,14 @@ export default function App() {
   function updateItem(id: string, data: Partial<BucketItem>) {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...data } : i)));
     setDetailItem((prev) => (prev && prev.id === id ? { ...prev, ...data } : prev));
+  }
+
+  // Merges against the latest state rather than a snapshot passed as a prop, so photos
+  // added in quick succession (each starting from its own stale `item.photos`) can't clobber
+  // one another the way a plain updateItem(id, { photos: [...item.photos, ...new] }) would.
+  function addPhotos(id: string, newPhotos: string[]) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, photos: [...i.photos, ...newPhotos] } : i)));
+    setDetailItem((prev) => (prev && prev.id === id ? { ...prev, photos: [...prev.photos, ...newPhotos] } : prev));
   }
 
   function deleteItem(id: string) {
@@ -103,6 +111,7 @@ export default function App() {
           item={detailItem}
           onClose={() => setDetailItem(null)}
           onUpdate={updateItem}
+          onAddPhotos={addPhotos}
           onUnachieve={unachieve}
         />
       )}

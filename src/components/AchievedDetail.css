@@ -100,6 +100,12 @@
   border-color: var(--accent);
 }
 
+.detail-thumb.add:disabled,
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .detail-thumb.add {
   display: flex;
   align-items: center;
