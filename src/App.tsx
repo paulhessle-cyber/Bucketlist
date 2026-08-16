@@ -25,6 +25,13 @@ function todayIso() {
 // (with a clear message) instead of silently, before ever hitting the hard limit.
 const MAX_ITEM_BYTES = 900_000;
 
+function reportCloudError(err: unknown) {
+  const message = err instanceof Error ? err.message : String(err);
+  window.alert(
+    "Couldn't save that to your synced list — it may not have been saved.\n\n" + message
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useState<TabKey>('my-list');
   const [detailItemId, setDetailItemId] = useState<string | null>(null);
@@ -46,12 +53,17 @@ export default function App() {
     if (!useCloud || !uid || migrated.current === uid) return;
     migrated.current = uid;
     (async () => {
-      const [hasItems, hasVisited] = await Promise.all([
-        cloudItems.hasAnyRemoteItems(),
-        cloudVisited.hasAnyRemoteVisited(),
-      ]);
-      if (!hasItems && localItems.length > 0) await cloudItems.importItems(localItems);
-      if (!hasVisited && localVisited.length > 0) await cloudVisited.saveVisited(localVisited);
+      try {
+        const [hasItems, hasVisited] = await Promise.all([
+          cloudItems.hasAnyRemoteItems(),
+          cloudVisited.hasAnyRemoteVisited(),
+        ]);
+        if (!hasItems && localItems.length > 0) await cloudItems.importItems(localItems);
+        if (!hasVisited && localVisited.length > 0) await cloudVisited.saveVisited(localVisited);
+      } catch (err) {
+        migrated.current = null; // let it retry on the next sign-in/render
+        reportCloudError(err);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useCloud, uid]);
@@ -69,7 +81,7 @@ export default function App() {
       createdAt: new Date().toISOString(),
       ...data,
     };
-    if (useCloud) cloudItems.saveItem(item);
+    if (useCloud) cloudItems.saveItem(item).catch(reportCloudError);
     else setLocalItems((prev) => [...prev, item]);
   }
 
@@ -77,12 +89,12 @@ export default function App() {
     const current = items.find((i) => i.id === id);
     if (!current) return;
     const next = { ...current, ...data };
-    if (useCloud) cloudItems.saveItem(next);
+    if (useCloud) cloudItems.saveItem(next).catch(reportCloudError);
     else setLocalItems((prev) => prev.map((i) => (i.id === id ? next : i)));
   }
 
   function deleteItem(id: string) {
-    if (useCloud) cloudItems.removeItem(id);
+    if (useCloud) cloudItems.removeItem(id).catch(reportCloudError);
     else setLocalItems((prev) => prev.filter((i) => i.id !== id));
   }
 
@@ -93,7 +105,7 @@ export default function App() {
       current.status === 'active'
         ? { ...current, status: 'achieved', achievedDate: todayIso() }
         : { ...current, status: 'active', achievedDate: undefined };
-    if (useCloud) cloudItems.saveItem(next);
+    if (useCloud) cloudItems.saveItem(next).catch(reportCloudError);
     else setLocalItems((prev) => prev.map((i) => (i.id === id ? next : i)));
   }
 
@@ -116,7 +128,7 @@ export default function App() {
         // Atomic server-side append — safe even if uploads overlap or race across devices.
         await cloudItems.addPhotosToItem(id, newPhotos);
       } catch (err) {
-        window.alert("Couldn't save those photos: " + (err instanceof Error ? err.message : String(err)));
+        reportCloudError(err);
       }
     } else {
       setLocalItems((prev) => prev.map((i) => (i.id === id ? { ...i, photos: [...i.photos, ...newPhotos] } : i)));
@@ -126,7 +138,7 @@ export default function App() {
   function toggleCountry(id: string, name: string) {
     const exists = visited.some((v) => v.id === id);
     const next = exists ? visited.filter((v) => v.id !== id) : [...visited, { id, name, visitedAt: todayIso() }];
-    if (useCloud) cloudVisited.saveVisited(next);
+    if (useCloud) cloudVisited.saveVisited(next).catch(reportCloudError);
     else setLocalVisited(next);
   }
 
