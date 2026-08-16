@@ -17,5 +17,9 @@ export const googleProvider = new GoogleAuthProvider();
 export const db = app
   ? initializeFirestore(app, {
       localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({}) }),
+      // BucketItem's optional fields (location, targetDate, achievedDate, description) are
+      // set to `undefined` rather than omitted when empty; Firestore rejects `undefined` by
+      // default, so drop those fields instead of failing the whole write.
+      ignoreUndefinedProperties: true,
     })
   : null;
